@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Термины Dota 2: байбек, смок, вижен, хекс, фарм и другие понятия.">
+  <meta name="description" content="Схематичная карта Dota 2 с ключевыми зонами: Рошан, руны, линии, лес и базы.">
   <meta name="theme-color" content="#090a0f">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Словарь Dota 2 — DotaWiki">
-  <meta property="og:description" content="Термины Dota 2: байбек, смок, вижен, хекс, фарм и другие понятия.">
-  <title>Словарь Dota 2 — DotaWiki</title>
+  <meta property="og:title" content="Карта Dota 2 — DotaWiki">
+  <meta property="og:description" content="Схематичная карта Dota 2 с ключевыми зонами: Рошан, руны, линии, лес и базы.">
+  <title>Карта Dota 2 — DotaWiki</title>
   <link rel="icon" href="assets/favicon.svg?v=2.8" type="image/svg+xml">
   <link rel="stylesheet" href="css/style.css?v=2.8">
 </head>
@@ -35,7 +35,12 @@
   <form class="global-search" data-global-search role="search"><input id="globalSearch" placeholder="Герой, предмет или термин..." autocomplete="off"><div class="global-results" id="globalResults" hidden></div></form>
   <button class="theme-toggle" data-theme-toggle title="Сменить тему" aria-label="Сменить тему">☾</button>
 </header>
-<main class="shell page-main"><nav class="breadcrumbs"><a href="index.html?v=2.8">Главная</a><span>→</span><span>Словарь</span></nav><section class="page-heading"><p class="eyebrow">термины</p><h1>Словарь</h1><p>Термины, которые встречаются в матчах, описаниях героев и командном общении.</p></section><section class="toolbar glossary-toolbar"><label class="field wide"><span>Поиск термина</span><input id="glossarySearch" placeholder="байбек, смок, хекс..."></label><label class="field"><span>Категория</span><select id="glossaryCategory"><option value="">Все категории</option></select></label><button class="button small" id="resetGlossary">Сбросить</button></section><p class="result-line" id="glossaryCount"></p><section class="category-strip" id="glossaryCategoryStrip"></section><section class="glossary-list" id="glossaryList"></section></main><footer class="site-footer"><div><strong>DotaWiki</strong><p>Dota 2 и связанные материалы принадлежат Valve.</p></div><div class="footer-links"><a href="sources.html?v=2.8">Источники</a><a href="#top">Наверх ↑</a></div></footer>
+<main class="shell page-main">
+<nav class="breadcrumbs"><a href="index.html?v=2.8">Главная</a><span>→</span><span>Карта</span></nav>
+<section class="page-heading"><p class="eyebrow">карта</p><h1>Схема карты</h1><p>Интерактивная схема ключевых зон: линии, Рошан, руны, лес, базы и обзор.</p></section>
+<section class="map-layout"><div class="dota-map" id="dotaMap" aria-label="Схема карты Dota 2"><div class="river"></div><div class="lane lane-top">Верхняя линия</div><div class="lane lane-mid">Мид</div><div class="lane lane-bot">Нижняя линия</div><div class="base radiant">Radiant</div><div class="base dire">Dire</div><button class="map-point" style="--x:46%;--y:42%" data-map="roshan">Рошан</button><button class="map-point" style="--x:50%;--y:50%" data-map="river">Река</button><button class="map-point" style="--x:38%;--y:54%" data-map="runes">Руны</button><button class="map-point" style="--x:63%;--y:35%" data-map="ancients">Древние</button><button class="map-point" style="--x:23%;--y:72%" data-map="safelane">Safe lane</button><button class="map-point" style="--x:76%;--y:24%" data-map="offlane">Off lane</button><button class="map-point" style="--x:30%;--y:38%" data-map="wards">Обзор</button></div><aside class="map-info wiki-panel" id="mapInfo"></aside></section>
+</main>
+<footer class="site-footer"><div><strong>DotaWiki</strong><p>Dota 2 и связанные материалы принадлежат Valve.</p></div><div class="footer-links"><a href="sources.html?v=2.8">Источники</a><a href="#top">Наверх ↑</a></div></footer>
 <script src="js/data.js?v=2.8"></script>
 <script src="js/app.js?v=2.8"></script>
 </body>

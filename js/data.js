@@ -1,6 +1,6 @@
 window.DOTA_WIKI_DATA = {
   "meta": {
-    "version": "DotaWiki 2.6",
+    "version": "DotaWiki 2.8",
     "updated": "2026-06-08",
     "sourceNote": "Данные героев сверяются с открытым datafeed Dota 2. Изображения и материалы Dota 2 принадлежат Valve."
   },
