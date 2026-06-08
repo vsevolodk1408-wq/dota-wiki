@@ -37,3 +37,27 @@
 @media (max-width:1180px){.main-nav{justify-content:flex-start}}
 @media (max-width:760px){.row-heading{align-items:flex-start;flex-direction:column}.home-patches,.patch-summary,.compare-picker,.compare-head,.item-detail{grid-template-columns:1fr}.item-detail-icon{width:100%;height:160px}.main-nav.open{position:fixed;top:86px;left:14px;right:14px;max-height:calc(100vh - 110px);overflow:auto;z-index:60;grid-template-columns:1fr 1fr}.global-search{width:100%}.site-header{position:sticky}}
 @media (max-width:480px){.main-nav.open{grid-template-columns:1fr}.compare-table th,.compare-table td{padding:12px}}
+
+
+/* v2.6 refinements */
+.more-nav{position:relative}
+.more-nav>summary{list-style:none;cursor:pointer;padding:10px 12px;border-radius:999px;color:var(--muted);font-weight:800;font-size:.92rem}
+.more-nav>summary::-webkit-details-marker{display:none}
+.more-nav[open]>summary,.more-nav>summary:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.more-nav-menu{position:absolute;right:0;top:46px;min-width:190px;display:grid;gap:4px;padding:8px;border:1px solid var(--line);border-radius:18px;background:color-mix(in srgb,var(--surface) 94%,#000);box-shadow:var(--shadow);z-index:70}
+.more-nav-menu a{display:block;border-radius:12px}
+.breadcrumbs{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 22px;color:var(--muted);font-weight:800;font-size:.9rem}
+.breadcrumbs a{color:var(--gold);text-decoration:none}
+.breadcrumbs a:hover{text-decoration:underline}
+.compact-toolbar{grid-template-columns:1.4fr .8fr auto}
+.glossary-toolbar{grid-template-columns:1.4fr .8fr auto}
+.category-strip{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px}
+.category-chip{border:1px solid var(--line);background:rgba(255,255,255,.055);color:var(--muted);border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
+.category-chip:hover,.category-chip.active{border-color:rgba(240,179,95,.55);color:var(--text);background:rgba(240,179,95,.12)}
+.empty-state h3{margin:0 0 8px;color:var(--text)}
+.empty-state p{margin:0 0 12px;color:var(--muted)}
+.mechanic-card .eyebrow{margin-bottom:6px}
+.result-line{min-height:1.3em}
+.button.ghost.small,.button.small.ghost{background:rgba(255,255,255,.055)}
+@media (max-width:1180px){.more-nav-menu{left:0;right:auto}}
+@media (max-width:760px){.more-nav-menu{position:static;box-shadow:none;margin-top:6px;background:rgba(255,255,255,.04)}.more-nav>summary{padding:10px 12px}.compact-toolbar,.glossary-toolbar{grid-template-columns:1fr}}
