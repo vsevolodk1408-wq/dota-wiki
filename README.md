@@ -1,1 +1,21 @@
-<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link rel="icon" href="assets/favicon.svg"><link rel="stylesheet" href="css/style.css?v=2.1"><title>Предметы — DotaWiki</title></head><body id="top"><header class="site-header"><a class="brand" href="index.html"><span class="brand-mark">◆</span><span><strong>DotaWiki</strong><small>fan encyclopedia</small></span></a><button class="menu-button" data-menu-button>☰</button><nav class="main-nav" data-menu><a href="index.html">Главная</a><a href="heroes.html">Герои</a><a href="items.html">Предметы</a><a href="mechanics.html">Механики</a><a href="guides.html">Гайды</a><a href="builds.html">Сборки</a><a href="glossary.html">Словарь</a><a href="patches.html">Патчи</a></nav><button class="theme-toggle" data-theme-toggle title="Сменить тему">☾</button></header><main class="shell page-main"><section class="page-heading"><p class="eyebrow">магазин и сборки</p><h1>Предметы</h1><p>Карточки предметов с картинками, ценами, категориями и быстрым поиском.</p></section><section class="toolbar item-toolbar"><label class="field wide"><span>Поиск</span><input id="itemSearch" placeholder="BKB, blink, сейв, вижен..."></label><label class="field"><span>Категория</span><select id="itemCategory"><option value="">Все</option></select></label><label class="field"><span>Цена</span><select id="priceFilter"><option value="">Любая</option><option value="cheap">до 1500</option><option value="mid">1500–4000</option><option value="late">4000+</option></select></label><button class="button small" id="onlyFavItems">★ Избранные</button></section><p class="result-line" id="itemsCount"></p><section class="item-grid" id="itemsList"></section></main><footer class="site-footer"><div><strong>DotaWiki</strong><p>Учебный фан-проект. Dota 2 и материалы игры принадлежат Valve. Данные надо сверять с актуальными патчами.</p></div><div class="footer-links"><a href="sources.html">Источники</a><a href="README.md">README</a><a href="#top">Наверх ↑</a></div></footer><script src="js/data.js?v=2.1"></script><script src="js/app.js?v=2.1"></script></body></html>
+# DotaWiki 2.2
+
+Статический сайт-энциклопедия по Dota 2 на HTML, CSS и JavaScript.
+
+## Состав сайта
+
+- Главная страница.
+- Герои с изображениями, поиском, фильтрами и избранным.
+- Отдельная страница героя.
+- Предметы с категориями, тегами и поиском.
+- Механики, роли, сборки, словарь и патчи.
+- Тёмная и светлая тема.
+- Адаптивная вёрстка для телефона и компьютера.
+
+## Источники
+
+- Официальная страница героев: https://www.dota2.com/heroes
+- Официальные патчноуты: https://www.dota2.com/patches
+- Страница Dota 2 в Steam: https://store.steampowered.com/app/570/Dota_2/
+
+Dota 2 и связанные материалы принадлежат Valve. Проект не связан с Valve.
