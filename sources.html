@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Источники — DotaWiki</title>
+  <meta name="description" content="DotaWiki — учебная энциклопедия по Dota 2: герои, предметы, механики, гайды и патчи." />
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="css/style.css" />
+
+</head>
+<body>
+  <header class="site-header">
+  <a class="brand" href="index.html" aria-label="DotaWiki на главную">
+    <span class="brand-mark">D</span>
+    <span>DotaWiki</span>
+  </a>
+  <button class="menu-button" data-menu-button aria-label="Открыть меню">☰</button>
+  <nav class="main-nav" data-menu>
+    <a class="" href="index.html">Главная</a>
+<a class="" href="heroes.html">Герои</a>
+<a class="" href="items.html">Предметы</a>
+<a class="" href="mechanics.html">Механики</a>
+<a class="" href="guides.html">Гайды</a>
+<a class="" href="glossary.html">Глоссарий</a>
+<a class="" href="patches.html">Патчи</a>
+<a class="active" href="sources.html">Источники</a>
+  </nav>
+  <button class="theme-toggle" data-theme-toggle type="button" aria-label="Переключить тему">☾</button>
+</header>
+
+
+<main class="page-main shell">
+  <section class="page-heading">
+    <p class="eyebrow">Ссылки и статус</p>
+    <h1>Источники и публикация</h1>
+    <p>Проект фанатский и учебный. Для актуальной базы нужно сверять данные с официальными страницами Dota 2.</p>
+  </section>
+  <section class="detail-grid">
+    <article class="article-card">
+      <h2>Основные источники для проверки</h2>
+      <ul class="source-list">
+        <li><a href="https://www.dota2.com/heroes" target="_blank" rel="noreferrer">Официальная страница героев Dota 2</a></li>
+        <li><a href="https://www.dota2.com/patches" target="_blank" rel="noreferrer">Официальные патчноуты Dota 2</a></li>
+        <li><a href="https://www.dota2.com/news/updates" target="_blank" rel="noreferrer">Новости и обновления Dota 2</a></li>
+        <li><a href="https://store.steampowered.com/app/570/Dota_2/" target="_blank" rel="noreferrer">Dota 2 в Steam</a></li>
+      </ul>
+    </article>
+    <article class="article-card">
+      <h2>Как получить публичную ссылку</h2>
+      <ol>
+        <li>Создай репозиторий на GitHub.</li>
+        <li>Загрузи все файлы из архива.</li>
+        <li>Открой <strong>Settings → Pages</strong>.</li>
+        <li>Выбери ветку <strong>main</strong> и папку <strong>/root</strong>.</li>
+        <li>Через минуту GitHub выдаст ссылку вида <code>https://username.github.io/repository/</code>.</li>
+      </ol>
+    </article>
+    <article class="article-card">
+      <h2>Что уже готово</h2>
+      <ul>
+        <li>Адаптивная верстка под телефон и ПК.</li>
+        <li>Поиск и фильтры на страницах героев, предметов и терминов.</li>
+        <li>Избранное через localStorage.</li>
+        <li>Отдельная страница героя через параметр в URL.</li>
+        <li>README с инструкциями.</li>
+      </ul>
+    </article>
+    <article class="article-card warning-card">
+      <h2>Важно</h2>
+      <p>Цены предметов, патчи и точные значения способностей могут меняться. Этот проект — рабочий сайт и основа для wiki, но игровую базу нужно обновлять после патчей.</p>
+    </article>
+  </section>
+</main>
+
+
+  <footer class="site-footer">
+    <div>
+      <strong>DotaWiki</strong>
+      <p>Учебный фан-проект. Неофициальный сайт, не связан с Valve.</p>
+    </div>
+    <div class="footer-links">
+      <a href="sources.html">Источники</a>
+      <a href="README.md">README</a>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
