@@ -1,254 +1,33 @@
-const DATA = window.DOTA_WIKI_DATA || { heroes: [], items: [], mechanics: [], guides: [], glossary: [], patches: [] };
 
-function qs(selector) { return document.querySelector(selector); }
-function qsa(selector) { return Array.from(document.querySelectorAll(selector)); }
-function normalize(value) { return String(value || '').toLowerCase().trim(); }
-function escapeHtml(value) {
-  return String(value ?? '')
-    .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
-}
-function slugify(value) { return normalize(value).replace(/[^a-zа-яё0-9]+/gi, '-').replace(/^-|-$/g, ''); }
-function pills(items) { return (items || []).map((x) => `<span class="pill">${escapeHtml(x)}</span>`).join(''); }
-function getStore(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
-function setStore(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-function isFav(type, id) { return getStore(`dotawiki:fav:${type}`).includes(id); }
-function toggleFav(type, id) {
-  const key = `dotawiki:fav:${type}`;
-  const list = getStore(key);
-  const next = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
-  setStore(key, next);
-}
-
-function setupMenu() {
-  const button = qs('[data-menu-button]');
-  const menu = qs('[data-menu]');
-  if (!button || !menu) return;
-  button.addEventListener('click', () => menu.classList.toggle('open'));
-}
-
-function setupTheme() {
-  const button = qs('[data-theme-toggle]');
-  const saved = localStorage.getItem('dotawiki:theme');
-  if (saved === 'light') document.body.classList.add('light-theme');
-  if (button) button.textContent = document.body.classList.contains('light-theme') ? '☀' : '☾';
-  button?.addEventListener('click', () => {
-    document.body.classList.toggle('light-theme');
-    const theme = document.body.classList.contains('light-theme') ? 'light' : 'dark';
-    localStorage.setItem('dotawiki:theme', theme);
-    button.textContent = theme === 'light' ? '☀' : '☾';
-  });
-}
-
-function uniqueValues(list, getter) {
-  return [...new Set(list.flatMap(getter))].filter(Boolean).sort((a, b) => a.localeCompare(b, 'ru'));
-}
-function fillSelect(select, values) {
-  if (!select) return;
-  select.innerHTML += values.map((value) => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
-}
-
-function heroCard(hero) {
-  const fav = isFav('heroes', hero.slug);
-  return `
-    <article class="wiki-card hero-card">
-      <button class="fav-button ${fav ? 'active' : ''}" data-fav-type="heroes" data-fav-id="${escapeHtml(hero.slug)}" type="button" aria-label="Добавить в избранное">★</button>
-      <div class="avatar-small">${escapeHtml(hero.name.slice(0, 1))}</div>
-      <div class="card-meta"><span>${escapeHtml(hero.attribute)}</span><span>${escapeHtml(hero.complexity)}</span></div>
-      <h2>${escapeHtml(hero.name)}</h2>
-      <p>${escapeHtml(hero.tagline)}</p>
-      <div class="pill-row">${pills(hero.roles)}</div>
-      <a class="card-link" href="hero.html?hero=${encodeURIComponent(hero.slug)}">Открыть героя →</a>
-    </article>`;
-}
-
-function setupFavButtons(redraw) {
-  document.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-fav-id]');
-    if (!button) return;
-    event.preventDefault();
-    toggleFav(button.dataset.favType, button.dataset.favId);
-    redraw?.();
-  });
-}
-
-function renderHome() {
-  const stats = qs('#siteStats');
-  if (stats) {
-    const statData = [
-      ['Героев в базе', DATA.heroes.length],
-      ['Предметов', DATA.items.length],
-      ['Механик', DATA.mechanics.length],
-      ['Терминов', DATA.glossary.length],
-    ];
-    stats.innerHTML = statData.map(([label, value]) => `<article class="stat-card"><strong>${value}</strong><span>${label}</span></article>`).join('');
-  }
-  const featured = qs('#featuredHeroes');
-  if (featured) featured.innerHTML = DATA.heroes.slice(0, 6).map(heroCard).join('');
-}
-
-function renderHeroes() {
-  const grid = qs('#heroesGrid');
-  if (!grid) return;
-  const searchInput = qs('#heroSearch');
-  const attributeFilter = qs('#attributeFilter');
-  const roleFilter = qs('#roleFilter');
-  const complexityFilter = qs('#complexityFilter');
-  const favoriteFilter = qs('#favoriteHeroFilter');
-  const count = qs('#heroCount');
-  let onlyFav = false;
-
-  fillSelect(attributeFilter, uniqueValues(DATA.heroes, (hero) => [hero.attribute]));
-  fillSelect(roleFilter, uniqueValues(DATA.heroes, (hero) => hero.roles));
-  fillSelect(complexityFilter, uniqueValues(DATA.heroes, (hero) => [hero.complexity]));
-
-  function draw() {
-    const search = normalize(searchInput?.value);
-    const attribute = attributeFilter?.value || 'all';
-    const role = roleFilter?.value || 'all';
-    const complexity = complexityFilter?.value || 'all';
-    const filtered = DATA.heroes.filter((hero) => {
-      const searchable = normalize([hero.name, hero.attribute, hero.complexity, hero.roles.join(' '), hero.tagline, hero.description, hero.abilities.join(' ')].join(' '));
-      return (!search || searchable.includes(search)) &&
-        (attribute === 'all' || hero.attribute === attribute) &&
-        (role === 'all' || hero.roles.includes(role)) &&
-        (complexity === 'all' || hero.complexity === complexity) &&
-        (!onlyFav || isFav('heroes', hero.slug));
-    });
-    if (count) count.textContent = filtered.length;
-    grid.innerHTML = filtered.length ? filtered.map(heroCard).join('') : `<div class="empty-state">Ничего не найдено. Попробуй изменить поиск или фильтр.</div>`;
-  }
-  [searchInput, attributeFilter, roleFilter, complexityFilter].forEach((el) => el?.addEventListener('input', draw));
-  favoriteFilter?.addEventListener('click', () => { onlyFav = !onlyFav; favoriteFilter.classList.toggle('active', onlyFav); draw(); });
-  setupFavButtons(draw);
-  draw();
-}
-
-function renderHeroDetails() {
-  const container = qs('#heroDetails');
-  if (!container) return;
-  const params = new URLSearchParams(window.location.search);
-  const slug = params.get('hero');
-  const hero = DATA.heroes.find((item) => item.slug === slug) || DATA.heroes[0];
-  document.title = `${hero.name} — DotaWiki`;
-  const relatedItems = DATA.items.filter((item) => (hero.items || []).includes(item.name));
-  container.innerHTML = `
-    <a class="back-link" href="heroes.html">← Назад к героям</a>
-    <section class="detail-hero">
-      <div>
-        <p class="eyebrow">${escapeHtml(hero.attribute)} · ${escapeHtml(hero.complexity)} сложность</p>
-        <h1>${escapeHtml(hero.name)}</h1>
-        <p>${escapeHtml(hero.description)}</p>
-        <div class="pill-row">${pills(hero.roles)}</div>
-      </div>
-      <div class="avatar-placeholder" aria-hidden="true">${escapeHtml(hero.name.slice(0, 1))}</div>
-    </section>
-    <section class="detail-grid">
-      <article class="article-card"><h2>Способности</h2><ul>${hero.abilities.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></article>
-      <article class="article-card"><h2>Рекомендуемые предметы</h2><div class="item-chips">${(hero.items || []).map((x) => `<span>${escapeHtml(x)}</span>`).join('')}</div></article>
-      <article class="article-card"><h2>Сильные стороны</h2><ul>${hero.strengths.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></article>
-      <article class="article-card"><h2>Слабые стороны</h2><ul>${hero.weaknesses.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></article>
-      <article class="article-card wide-card"><h2>Советы по игре</h2><ul>${hero.tips.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul></article>
-      <article class="article-card wide-card"><h2>Предметы из базы</h2>${relatedItems.length ? relatedItems.map((item) => `<p><strong>${escapeHtml(item.name)}</strong> — ${escapeHtml(item.description)}</p>`).join('') : '<p>Добавь предметы героя в js/data.js.</p>'}</article>
-    </section>`;
-}
-
-function itemCard(item) {
-  const id = slugify(item.name);
-  const fav = isFav('items', id);
-  return `
-    <article class="wiki-card">
-      <button class="fav-button ${fav ? 'active' : ''}" data-fav-type="items" data-fav-id="${escapeHtml(id)}" type="button" aria-label="Добавить в избранное">★</button>
-      <div class="card-meta"><span>${escapeHtml(item.category)}</span><span>${Number(item.cost).toLocaleString('ru-RU')} золота</span></div>
-      <h2>${escapeHtml(item.name)}</h2>
-      <p>${escapeHtml(item.description)}</p>
-      <div class="pill-row">${pills(item.tags)}</div>
-    </article>`;
-}
-
-function renderItems() {
-  const grid = qs('#itemsGrid');
-  if (!grid) return;
-  const searchInput = qs('#itemSearch');
-  const categoryFilter = qs('#itemCategoryFilter');
-  const favoriteFilter = qs('#favoriteItemFilter');
-  const count = qs('#itemCount');
-  let onlyFav = false;
-  fillSelect(categoryFilter, uniqueValues(DATA.items, (item) => [item.category]));
-  function draw() {
-    const search = normalize(searchInput?.value);
-    const category = categoryFilter?.value || 'all';
-    const filtered = DATA.items.filter((item) => {
-      const searchable = normalize([item.name, item.category, item.description, item.tags.join(' ')].join(' '));
-      return (!search || searchable.includes(search)) && (category === 'all' || item.category === category) && (!onlyFav || isFav('items', slugify(item.name)));
-    });
-    if (count) count.textContent = filtered.length;
-    grid.innerHTML = filtered.length ? filtered.map(itemCard).join('') : `<div class="empty-state">Предметы не найдены. Попробуй другой запрос.</div>`;
-  }
-  [searchInput, categoryFilter].forEach((el) => el?.addEventListener('input', draw));
-  favoriteFilter?.addEventListener('click', () => { onlyFav = !onlyFav; favoriteFilter.classList.toggle('active', onlyFav); draw(); });
-  setupFavButtons(draw);
-  draw();
-}
-
-function renderMechanics() {
-  const grid = qs('#mechanicsGrid');
-  if (!grid) return;
-  grid.innerHTML = DATA.mechanics.map((item) => `
-    <article class="article-card mechanic-card">
-      <p class="eyebrow">${escapeHtml(item.tag)}</p>
-      <h2>${escapeHtml(item.title)}</h2>
-      <p>${escapeHtml(item.text)}</p>
-      <ul>${item.points.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
-    </article>`).join('');
-}
-
-function renderGuides() {
-  const grid = qs('#guidesGrid');
-  if (!grid) return;
-  grid.innerHTML = DATA.guides.map((guide) => `
-    <article class="article-card guide-card">
-      <div class="card-meta"><span>${escapeHtml(guide.level)}</span><span>${escapeHtml(guide.readTime)}</span></div>
-      <h2>${escapeHtml(guide.title)}</h2>
-      <p>${escapeHtml(guide.summary)}</p>
-      <ol>${guide.steps.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ol>
-    </article>`).join('');
-}
-
-function renderGlossary() {
-  const list = qs('#glossaryList');
-  if (!list) return;
-  const input = qs('#glossarySearch');
-  function draw() {
-    const search = normalize(input?.value);
-    const filtered = DATA.glossary.filter((item) => normalize(`${item.term} ${item.definition}`).includes(search));
-    list.innerHTML = filtered.length ? filtered.map((item) => `<article class="glossary-item"><h2>${escapeHtml(item.term)}</h2><p>${escapeHtml(item.definition)}</p></article>`).join('') : `<div class="empty-state">Термин не найден.</div>`;
-  }
-  input?.addEventListener('input', draw);
-  draw();
-}
-
-function renderPatches() {
-  const list = qs('#patchList');
-  if (!list) return;
-  list.innerHTML = DATA.patches.map((patch) => `
-    <article class="timeline-item">
-      <div class="timeline-version">${escapeHtml(patch.version)}</div>
-      <div class="timeline-content">
-        <p class="eyebrow">${escapeHtml(patch.date)}</p>
-        <h2>${escapeHtml(patch.title)}</h2>
-        <ul>${patch.points.map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
-      </div>
-    </article>`).join('');
-}
-
-setupMenu();
-setupTheme();
-renderHome();
-renderHeroes();
-renderHeroDetails();
-renderItems();
-renderMechanics();
-renderGuides();
-renderGlossary();
-renderPatches();
+const DATA = window.DOTA_WIKI_DATA || {heroes:[],items:[],mechanics:[],guides:[],glossary:[],patches:[]};
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const norm = v => String(v ?? '').toLowerCase().trim();
+const esc = v => String(v ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+const pills = arr => (arr||[]).map(x=>`<span class="pill">${esc(x)}</span>`).join('');
+const tags = arr => (arr||[]).map(x=>`<span>${esc(x)}</span>`).join('');
+const storeKey = (t)=>`dotawiki:v2:fav:${t}`;
+function getFav(t){try{return JSON.parse(localStorage.getItem(storeKey(t))||'[]')}catch{return []}}
+function setFav(t,v){localStorage.setItem(storeKey(t),JSON.stringify(v))}
+function isFav(t,id){return getFav(t).includes(id)}
+function toggleFav(t,id){const a=getFav(t);setFav(t,a.includes(id)?a.filter(x=>x!==id):[...a,id])}
+function fallbackSvg(label){const safe=encodeURIComponent(String(label||'?').slice(0,2).toUpperCase());return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 240'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%23c8322b'/%3E%3Cstop offset='1' stop-color='%23f0b35f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='240' fill='%23101116'/%3E%3Ccircle cx='325' cy='35' r='120' fill='url(%23g)' opacity='.35'/%3E%3Ctext x='50%25' y='55%25' dominant-baseline='middle' text-anchor='middle' font-size='72' fill='%23fff' font-family='Arial' font-weight='800'%3E${safe}%3C/text%3E%3C/svg%3E`}
+function setupMenu(){const b=$('[data-menu-button]'),m=$('[data-menu]');b?.addEventListener('click',()=>m?.classList.toggle('open'))}
+function setupTheme(){const b=$('[data-theme-toggle]');if(localStorage.getItem('dotawiki:theme')==='light')document.body.classList.add('light-theme');if(b)b.textContent=document.body.classList.contains('light-theme')?'☀':'☾';b?.addEventListener('click',()=>{document.body.classList.toggle('light-theme');const t=document.body.classList.contains('light-theme')?'light':'dark';localStorage.setItem('dotawiki:theme',t);b.textContent=t==='light'?'☀':'☾'})}
+function markActiveNav(){const file=location.pathname.split('/').pop()||'index.html';$$('.main-nav a').forEach(a=>{if(a.getAttribute('href')===file)a.classList.add('active')})}
+function fillSelect(sel,values){const el=$(sel); if(!el)return; el.innerHTML += [...new Set(values)].filter(Boolean).sort((a,b)=>a.localeCompare(b,'ru')).map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+function heroCard(h){return `<article class="wiki-card hero-card"><button class="fav-button ${isFav('heroes',h.slug)?'active':''}" data-fav-type="heroes" data-fav-id="${esc(h.slug)}">★</button><div class="hero-img-wrap"><img src="${esc(h.image)}" alt="${esc(h.name)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackSvg(h.name)}'"></div><div class="card-body"><div class="card-meta"><span>${esc(h.attribute)}</span><span>${esc(h.complexity)}</span></div><h2>${esc(h.name)}</h2><p>${esc(h.overview)}</p><div class="pill-row">${pills(h.roles)}</div><a class="card-link" href="hero.html?hero=${encodeURIComponent(h.slug)}">Открыть героя →</a></div></article>`}
+function itemCard(it){return `<article class="item-card"><button class="fav-button ${isFav('items',it.slug)?'active':''}" data-fav-type="items" data-fav-id="${esc(it.slug)}">★</button><img class="item-icon" src="${esc(it.image)}" alt="${esc(it.name)}" loading="lazy" onerror="this.onerror=null;this.src='${fallbackSvg(it.name)}'"><div><div class="card-meta"><span>${esc(it.category)}</span><span class="price">${it.price?it.price+' зол.':'особый'}</span></div><h3>${esc(it.name)}</h3><p>${esc(it.description)}</p><div class="taglist">${tags(it.tags)}</div></div></article>`}
+function setupFavButtons(redraw){document.addEventListener('click',e=>{const b=e.target.closest('[data-fav-id]');if(!b)return;e.preventDefault();toggleFav(b.dataset.favType,b.dataset.favId);redraw?.()})}
+function renderHome(){const stats=$('#siteStats');if(stats){stats.innerHTML=[['Героев',DATA.heroes.length],['Предметов',DATA.items.length],['Механик',DATA.mechanics.length],['Терминов',DATA.glossary.length]].map(([a,b])=>`<article class="stat-card"><strong>${b}</strong><span>${a} в базе</span></article>`).join('')} const home=$('#homeHeroes');if(home){const picks=['axe','juggernaut','invoker','phantom_assassin','pudge','earthshaker'].map(s=>DATA.heroes.find(h=>h.slug===s)).filter(Boolean);home.innerHTML=picks.map(heroCard).join('')} const stack=$('#heroStack');if(stack){const picks=['axe','invoker','phantom_assassin'].map(s=>DATA.heroes.find(h=>h.slug===s)).filter(Boolean);stack.innerHTML=picks.map(h=>`<div class="stack-card"><img src="${esc(h.image)}" alt="${esc(h.name)}" onerror="this.onerror=null;this.src='${fallbackSvg(h.name)}'"><span>${esc(h.name)}</span><small>${esc(h.roles.join(' · '))}</small></div>`).join('')}}
+function renderHeroes(){const list=$('#heroesList');if(!list)return;fillSelect('#attributeFilter',DATA.heroes.map(h=>h.attribute));fillSelect('#roleFilter',DATA.heroes.flatMap(h=>h.roles));fillSelect('#complexityFilter',DATA.heroes.map(h=>h.complexity));let favOnly=false;const redraw=()=>{const q=norm($('#heroSearch')?.value),attr=$('#attributeFilter')?.value,role=$('#roleFilter')?.value,cx=$('#complexityFilter')?.value;let arr=DATA.heroes.filter(h=>(!q||norm([h.name,h.attribute,h.complexity,h.roles.join(' '),h.overview].join(' ')).includes(q))&&(!attr||h.attribute===attr)&&(!role||h.roles.includes(role))&&(!cx||h.complexity===cx)&&(!favOnly||isFav('heroes',h.slug)));$('#heroesCount').textContent=`Показано героев: ${arr.length} из ${DATA.heroes.length}`;list.innerHTML=arr.length?arr.map(heroCard).join(''):'<div class="empty-state">Ничего не найдено. Попробуй сбросить фильтры.</div>'};['#heroSearch','#attributeFilter','#roleFilter','#complexityFilter'].forEach(s=>$(s)?.addEventListener('input',redraw));$('#onlyFavHeroes')?.addEventListener('click',e=>{favOnly=!favOnly;e.currentTarget.classList.toggle('active',favOnly);redraw()});setupFavButtons(redraw);redraw()}
+function renderHeroDetail(){const box=$('#heroDetail');if(!box)return;const slug=new URLSearchParams(location.search).get('hero')||'';const h=DATA.heroes.find(x=>x.slug===slug)||DATA.heroes[0];document.title=`${h.name} — DotaWiki`;box.innerHTML=`<section class="detail-hero"><div><p class="eyebrow">${esc(h.attribute)} · ${esc(h.complexity)}</p><h1>${esc(h.name)}</h1><p>${esc(h.overview)}</p><div class="pill-row">${pills(h.roles)}</div><div class="hero-actions"><button class="button primary" data-fav-type="heroes" data-fav-id="${esc(h.slug)}">★ ${isFav('heroes',h.slug)?'В избранном':'В избранное'}</button><a class="button ghost" href="heroes.html">Все герои</a></div></div><div class="detail-hero-art"><img src="${esc(h.portrait||h.image)}" alt="${esc(h.name)}" onerror="this.onerror=null;this.src='${fallbackSvg(h.name)}'"></div></section><section class="detail-grid"><article class="wiki-panel"><h2>Описание</h2><p>${esc(h.description)}</p></article><article class="wiki-panel"><h2>Роли</h2><div class="pill-row">${pills(h.roles)}</div></article><article class="wiki-panel"><h2>Способности</h2>${h.abilities?.length?`<ul>${h.abilities.map(a=>`<li>${esc(a)}</li>`).join('')}</ul>`:'<p>Точные способности и числа лучше сверить с актуальным патчем. Эта карточка содержит роль и общую стратегию героя.</p>'}</article><article class="wiki-panel"><h2>Пример предметов</h2><div class="item-chips">${tags(h.bestItems)}</div></article><article class="wiki-panel"><h2>Советы</h2><ul>${h.tips.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></article><article class="wiki-panel"><h2>Противодействие</h2><div class="item-chips">${tags(h.counters)}</div></article><article class="wiki-panel wide-card"><h2>Хорошо сочетается с</h2><div class="item-chips">${tags(h.synergy)}</div></article></section>`;setupFavButtons(()=>renderHeroDetail())}
+function renderItems(){const list=$('#itemsList');if(!list)return;fillSelect('#itemCategory',DATA.items.map(i=>i.category));let favOnly=false;const redraw=()=>{const q=norm($('#itemSearch')?.value),cat=$('#itemCategory')?.value,pf=$('#priceFilter')?.value;let arr=DATA.items.filter(i=>(!q||norm([i.name,i.category,i.description,(i.tags||[]).join(' ')].join(' ')).includes(q))&&(!cat||i.category===cat)&&(!favOnly||isFav('items',i.slug)));if(pf==='cheap')arr=arr.filter(i=>i.price&&i.price<1500);if(pf==='mid')arr=arr.filter(i=>i.price>=1500&&i.price<=4000);if(pf==='late')arr=arr.filter(i=>i.price>4000);$('#itemsCount').textContent=`Показано предметов: ${arr.length} из ${DATA.items.length}`;list.innerHTML=arr.length?arr.map(itemCard).join(''):'<div class="empty-state">Предметы не найдены.</div>'};['#itemSearch','#itemCategory','#priceFilter'].forEach(s=>$(s)?.addEventListener('input',redraw));$('#onlyFavItems')?.addEventListener('click',e=>{favOnly=!favOnly;e.currentTarget.classList.toggle('active',favOnly);redraw()});setupFavButtons(redraw);redraw()}
+function renderMechanics(){const box=$('#mechanicsList');if(box)box.innerHTML=DATA.mechanics.map(m=>`<article class="article-card"><div class="mechanic-icon">${esc(m.icon)}</div><h2>${esc(m.title)}</h2><p>${esc(m.text)}</p></article>`).join('')}
+function renderGuides(){const box=$('#guidesList');if(box)box.innerHTML=DATA.guides.map(g=>`<article class="article-card guide-card"><span class="level-badge">${esc(g.level)}</span><h2>${esc(g.title)}</h2><p>${esc(g.text)}</p></article>`).join('')}
+const buildData={carry:{title:'Керри',cols:[['Старт','Quelling Blade','Magic Wand','Power Treads'],['Середина','Battle Fury / Maelstrom','Black King Bar','Manta Style'],['Лейт','Butterfly','Satanic','Abyssal Blade']]},mid:{title:'Мидер',cols:[['Старт','Bottle','Magic Wand','Power Treads'],['Середина','Blink / Shadow Blade','Black King Bar','Kaya item'],['Лейт','Scythe of Vyse','Refresher Orb','Aghanim’s Scepter']]},offlane:{title:'Оффлейн',cols:[['Старт','Bracer','Phase Boots','Vanguard / Hood'],['Середина','Blink Dagger','Pipe / Crimson','Black King Bar'],['Лейт','Shiva’s Guard','Lotus Orb','Refresher Orb']]},support:{title:'Саппорт',cols:[['Старт','Observer Ward','Sentry Ward','Magic Wand'],['Середина','Arcane Boots','Force Staff','Glimmer Cape'],['Лейт','Aghanim’s Shard','Lotus Orb','Scythe of Vyse']]} };
+function renderBuilds(type='carry'){const box=$('#buildDetail');if(!box)return;const b=buildData[type];$$('[data-build]').forEach(x=>x.classList.toggle('active',x.dataset.build===type));box.innerHTML=`<h2>${esc(b.title)}</h2><p>Шаблонная логика покупки. В реальной игре замени предметы под пик врага, темп и свою роль.</p><div class="build-columns">${b.cols.map(col=>`<div class="build-col"><h3>${esc(col[0])}</h3><ul>${col.slice(1).map(x=>`<li>${esc(x)}</li>`).join('')}</ul></div>`).join('')}</div>`}
+function setupBuilds(){if(!$('#buildDetail'))return;$$('[data-build]').forEach(b=>b.addEventListener('click',()=>renderBuilds(b.dataset.build)));renderBuilds('carry')}
+function renderGlossary(){const box=$('#glossaryList');if(!box)return;const redraw=()=>{const q=norm($('#glossarySearch')?.value);const arr=DATA.glossary.filter(g=>!q||norm(g.term+' '+g.definition).includes(q));box.innerHTML=arr.map(g=>`<article class="glossary-item"><h2>${esc(g.term)}</h2><p>${esc(g.definition)}</p></article>`).join('')||'<div class="empty-state">Термин не найден.</div>'};$('#glossarySearch')?.addEventListener('input',redraw);redraw()}
+function renderPatches(){const box=$('#patchTimeline');if(box)box.innerHTML=DATA.patches.map(p=>`<article class="timeline-item"><div class="timeline-version">${esc(p.version)}</div><div class="timeline-content"><p class="eyebrow">${esc(p.date)}</p><h2>${esc(p.title)}</h2><p>${esc(p.text)}</p></div></article>`).join('')}
+document.addEventListener('DOMContentLoaded',()=>{setupMenu();setupTheme();markActiveNav();renderHome();renderHeroes();renderHeroDetail();renderItems();renderMechanics();renderGuides();setupBuilds();renderGlossary();renderPatches();});
